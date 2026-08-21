@@ -57,13 +57,28 @@ conflicting `active` values between them. How you resolve that (which one wins,
 how you detect they're duplicates in the first place) is part of the exercise —
 there's no single correct answer, but be ready to explain your reasoning.
 
+## API
+
+- `GET /hubs` — the cleaned, deduplicated hub list, as a JSON array.
+- `GET /hubs/{hubId}` — a single cleaned record (case-insensitive ID match), or `404`.
+
+Cleaning is done once at startup by `HubCsvCleaner` and cached in memory. See
+[HubCsvCleaner.java](src/main/java/co/wethinkcode/logisticsconnect/HubCsvCleaner.java) for the
+normalization rules and the dedup strategy (grouped by normalized sorting-center name; lowest
+numeric hub ID wins as canonical; missing province backfilled from a duplicate sibling; `active`
+resolved via "any true wins"). Against the real `hubs-global.csv`, 18 raw rows collapse to 10
+records across 4 duplicate clusters.
+
 ## Project structure
 
 ```
 ingestion-service/
 ├── pom.xml
 └── src/main/
-    ├── java/co/wethinkcode/logisticsconnect/IngestionServiceApp.java
+    ├── java/co/wethinkcode/logisticsconnect/
+    │   ├── Hub.java
+    │   ├── HubCsvCleaner.java
+    │   └── IngestionServiceApp.java
     └── resources/hubs-global.csv
 ```
 
@@ -79,8 +94,8 @@ mvn package
 java -jar target/ingestion-service.jar
 ```
 
-Listens on port `7050`. Currently just exposes `/health` — the actual CSV
-parsing/cleaning logic is a TODO.
+Listens on port `7050`. Cleans and caches `hubs-global.csv` at startup, then serves it via
+`/hubs` and `/hubs/{hubId}` (see [API](#api) below) alongside `/health`.
 
 ## Test
 

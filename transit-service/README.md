@@ -9,12 +9,22 @@ parent pom.
 
 MQ: this service subscribes to the ActiveMQ topic `package-status-topic` — see [`../common/`](../common). Broker URL and topic name come from the common `co.wethinkcode.logisticsconnect.mq.MqConfig` class alongside it in this module.
 
+## API
+
+- `GET /eta/{hubId}` — calls hub-service for location, reads the current delay stage from a local
+  cache kept up to date by the `package-status-topic` subscription (unseen hubs default to stage
+  `0`), and returns `{ hubId, province, sortingCenter, delayStage, etaWindowStart, etaWindowEnd }`.
+  ETA formula: a 24h baseline, plus a window that widens by 6h per delay stage (4h base
+  uncertainty at stage 0). `404` if hub-service doesn't know the hub, `502` if hub-service is
+  unreachable.
+
 ## Project structure
 
 ```
 transit-service/
 ├── pom.xml
 └── src/main/java/co/wethinkcode/logisticsconnect/
+    ├── Hub.java
     ├── TransitServiceApp.java
     └── mq/
         └── MqConfig.java

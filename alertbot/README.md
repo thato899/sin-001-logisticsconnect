@@ -15,6 +15,15 @@ come from the common `co.wethinkcode.logisticsconnect.mq.MqConfig` class alongsi
 it in this module. Use the stage in each message to decide when to raise an alert
 (e.g. above a threshold you choose).
 
+## API
+
+- Chosen threshold: stage `>= 6` (of 0-8) — severe enough to be worth telling the public about.
+- Fires only when a hub's stage *crosses upward* through the threshold (tracked per hub), not on
+  every message that's still above it — re-fires if the hub drops back below and crosses again.
+- "Posting" is simulated: a log line plus an in-memory record.
+- `GET /alerts` — every simulated alert fired so far, as a JSON array of
+  `{ hubId, stage, postedAt, message }`.
+
 ## Project structure
 
 ```
