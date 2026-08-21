@@ -99,11 +99,18 @@ Listens on port `7050`. Cleans and caches `hubs-global.csv` at startup, then ser
 
 ## Test
 
-No automated tests yet. Manually verify it's up:
+```
+mvn test
+```
+
+Runs [HubCsvCleanerTest](src/test/java/co/wethinkcode/logisticsconnect/HubCsvCleanerTest.java) — 15
+tests covering each normalization rule in isolation (casing, padding, province spelling variants,
+boolean flags, unknown/placeholder handling) plus the dedup behavior (merge, canonical ID
+selection, active resolution, missing-province backfill), and 3 tests run against the real
+`hubs-global.csv` confirming the 18-rows-to-10-records result.
+
+To sanity-check the running service instead:
 
 ```
 curl http://localhost:7050/health   # -> OK
 ```
-
-To add real tests, add JUnit 5 + the Surefire plugin to `pom.xml`, put tests under
-`src/test/java/co/wethinkcode/logisticsconnect/`, and run `mvn test`.

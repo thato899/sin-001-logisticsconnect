@@ -28,8 +28,9 @@ cleanup through synchronous REST calls to asynchronous MQ decoupling and alertin
 Plus [`common/`](common) (no port) — the shared ActiveMQ broker and MQ config notes
 for `package-status-topic`: Package status updates move from latency-driven RPC to bandwidth-driven messaging.
 
-**Status:** scaffold only — build files, Javalin bootstrap, and TODOs are in place; no
-business logic has been implemented yet.
+**Status:** all four stages implemented and verified end-to-end, including the AlertBot stretch
+goal. See [DEBRIEF.md](DEBRIEF.md) for the reasoning behind the dedup strategy, the REST-vs-MQ
+split, and what's left as a known simplification.
 
 ## Your task
 
@@ -80,13 +81,19 @@ duplicated into each participating service.
 ```
 logisticsconnect/
 ├── README.md
+├── DEBRIEF.md
 ├── .gitignore
 ├── ingestion-service/          (port 7050)
 │   ├── pom.xml
 │   ├── README.md
-│   └── src/main/
-│       ├── java/co/wethinkcode/logisticsconnect/IngestionServiceApp.java
-│       └── resources/hubs-global.csv
+│   └── src/
+│       ├── main/
+│       │   ├── java/co/wethinkcode/logisticsconnect/
+│       │   │   ├── Hub.java
+│       │   │   ├── HubCsvCleaner.java
+│       │   │   └── IngestionServiceApp.java
+│       │   └── resources/hubs-global.csv
+│       └── test/java/co/wethinkcode/logisticsconnect/HubCsvCleanerTest.java
 ├── hub-service/          (port 7051)
 ├── delay-stage-service/          (port 7052)
 ├── transit-service/          (port 7053)
@@ -146,14 +153,15 @@ cd alertbot && mvn package && java -jar target/alertbot.jar
 
 ## Test
 
-No automated tests exist yet (this is a scaffold). Each running service exposes
-`/health`, so sanity-check manually:
+Each running service exposes `/health`, so sanity-check manually:
 
 ```
 curl http://localhost:7050/health   # -> OK
 ```
 
-To add real tests to a module, add JUnit 5 and Surefire to its `pom.xml`:
+`ingestion-service` also has an automated JUnit suite covering `HubCsvCleaner`'s normalization and
+dedup rules — run it with `cd ingestion-service && mvn test`. The other services don't have
+automated tests yet; to add them to a module, add JUnit 5 and Surefire to its `pom.xml`:
 
 ```xml
 <dependency>
