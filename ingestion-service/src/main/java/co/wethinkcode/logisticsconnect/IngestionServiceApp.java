@@ -11,10 +11,12 @@ import java.util.Map;
 
 public class IngestionServiceApp {
 
+    private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "7050"));
+
     public static void main(String[] args) {
         List<Hub> hubs = load();
 
-        Javalin app = Javalin.create().start(7050);
+        Javalin app = Javalin.create().start(PORT);
 
         app.get("/health", ctx -> ctx.result("OK"));
 

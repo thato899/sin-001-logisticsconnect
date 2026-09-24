@@ -44,7 +44,8 @@ Listens on port `7052`.
 
 ## Test
 
-No automated tests yet. Manually verify it's up:
+Unit tests cover stage validation. State is persisted to `STATE_FILE` (default
+`data/delay-stages.json`). Manually verify it's up:
 
 ```
 curl http://localhost:7052/health   # -> OK

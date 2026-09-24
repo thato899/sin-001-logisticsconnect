@@ -41,7 +41,7 @@ Listens on port `7051`.
 
 ## Test
 
-No automated tests yet. Manually verify it's up:
+Unit tests cover case-insensitive hub ID matching. Manually verify it's up:
 
 ```
 curl http://localhost:7051/health   # -> OK

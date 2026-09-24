@@ -51,7 +51,8 @@ Listens on port `7054`.
 
 ## Test
 
-No automated tests yet. Manually verify it's up:
+Unit tests cover threshold-crossing behavior. Alert history is persisted to `STATE_FILE` (default
+`data/alerts.json`). Manually verify it's up:
 
 ```
 curl http://localhost:7054/health   # -> OK

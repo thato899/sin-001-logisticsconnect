@@ -16,7 +16,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class HubServiceApp {
 
-    private static final String INGESTION_URL = "http://localhost:7050/hubs";
+    private static final String INGESTION_URL = System.getenv().getOrDefault("INGESTION_URL", "http://localhost:7050/hubs");
+    private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "7051"));
     private static final HttpClient HTTP = HttpClient.newHttpClient();
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final AtomicReference<List<Hub>> CACHE = new AtomicReference<>();
@@ -26,7 +27,7 @@ public class HubServiceApp {
         // each request retries the fetch until one succeeds (see hubs() below) — no restart needed.
         refreshCache();
 
-        Javalin app = Javalin.create().start(7051);
+        Javalin app = Javalin.create().start(PORT);
 
         app.get("/health", ctx -> ctx.result("OK"));
 
@@ -84,5 +85,9 @@ public class HubServiceApp {
             }
             return null;
         }
+    }
+
+    static boolean matchesHubId(Hub hub, String requestedId) {
+        return hub.hubId().equals(requestedId.trim().toUpperCase(Locale.ROOT));
     }
 }

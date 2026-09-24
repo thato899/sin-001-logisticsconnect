@@ -1,0 +1,8 @@
+.git
+.github
+.dist
+**/target
+**/dependency-reduced-pom.xml
+README.md
+DEBRIEF.md
+RUBRIC.md

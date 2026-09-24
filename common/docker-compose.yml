@@ -1,7 +1,96 @@
-version: "3.8"
 services:
   activemq:
     image: apache/activemq-classic:5.18.3
+    restart: unless-stopped
     ports:
       - "61616:61616"   # OpenWire (client connections)
       - "8161:8161"     # Web console
+    healthcheck:
+      test: ["CMD-SHELL", "code=$$(curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1:8161/); test \"$$code\" = 200 -o \"$$code\" = 401"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  ingestion-service:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        SERVICE: ingestion-service
+    restart: unless-stopped
+    environment:
+      PORT: 7050
+    ports: ["7050:7050"]
+
+  hub-service:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        SERVICE: hub-service
+    restart: unless-stopped
+    environment:
+      PORT: 7051
+      INGESTION_URL: http://ingestion-service:7050/hubs
+    depends_on:
+      ingestion-service:
+        condition: service_started
+    ports: ["7051:7051"]
+
+  delay-stage-service:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        SERVICE: delay-stage-service
+    restart: unless-stopped
+    environment:
+      PORT: 7052
+      BROKER_URL: failover:(tcp://activemq:61616)?maxReconnectAttempts=-1&initialReconnectDelay=1000
+      STATE_FILE: /data/delay-stages.json
+    depends_on:
+      activemq:
+        condition: service_healthy
+    volumes:
+      - delay-stage-data:/data
+    ports: ["7052:7052"]
+
+  transit-service:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        SERVICE: transit-service
+    restart: unless-stopped
+    environment:
+      PORT: 7053
+      HUB_SERVICE_URL: http://hub-service:7051
+      BROKER_URL: failover:(tcp://activemq:61616)?maxReconnectAttempts=-1&initialReconnectDelay=1000
+    depends_on:
+      activemq:
+        condition: service_healthy
+      hub-service:
+        condition: service_started
+    ports: ["7053:7053"]
+
+  alertbot:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      args:
+        SERVICE: alertbot
+    restart: unless-stopped
+    environment:
+      PORT: 7054
+      BROKER_URL: failover:(tcp://activemq:61616)?maxReconnectAttempts=-1&initialReconnectDelay=1000
+      STATE_FILE: /data/alerts.json
+    depends_on:
+      activemq:
+        condition: service_healthy
+    volumes:
+      - alertbot-data:/data
+    ports: ["7054:7054"]
+
+volumes:
+  delay-stage-data:
+  alertbot-data:

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>co.wethinkcode.logisticsconnect</groupId>
+  <artifactId>logisticsconnect</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+
+  <name>LogisticsConnect</name>
+  <description>Parcel hub and transit delay services</description>
+
+  <modules>
+    <module>ingestion-service</module>
+    <module>hub-service</module>
+    <module>delay-stage-service</module>
+    <module>transit-service</module>
+    <module>alertbot</module>
+  </modules>
+</project>

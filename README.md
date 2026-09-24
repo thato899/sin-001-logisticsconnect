@@ -28,9 +28,9 @@ cleanup through synchronous REST calls to asynchronous MQ decoupling and alertin
 Plus [`common/`](common) (no port) — the shared ActiveMQ broker and MQ config notes
 for `package-status-topic`: Package status updates move from latency-driven RPC to bandwidth-driven messaging.
 
-**Status:** all four stages implemented and verified end-to-end, including the AlertBot stretch
-goal. See [DEBRIEF.md](DEBRIEF.md) for the reasoning behind the dedup strategy, the REST-vs-MQ
-split, and what's left as a known simplification.
+**Status:** all four stages are implemented and verified end-to-end, including the AlertBot stretch
+goal. The repository also includes a root reactor build, CI, container images, broker health checks,
+and persistent volumes for delay and alert state. See [DEBRIEF.md](DEBRIEF.md) for design tradeoffs.
 
 ## Your task
 
@@ -119,7 +119,7 @@ mvn package
 ...or build every module in the repo in one pass from the project root:
 
 ```
-find . -name pom.xml -execdir mvn -q package \;
+mvn -B -ntp verify
 ```
 
 ## Run
@@ -136,8 +136,8 @@ cd delay-stage-service && mvn package && java -jar target/delay-stage-service.ja
 # terminal 3
 cd transit-service && mvn package && java -jar target/transit-service.jar
 
-# MQ broker (needed once the MQ-aware services above are wired up)
-cd common && docker compose up -d
+# broker and all services
+cd common && docker compose up -d --build
 
 # alerting
 cd alertbot && mvn package && java -jar target/alertbot.jar
@@ -161,27 +161,12 @@ curl http://localhost:7050/health   # -> OK
 
 `ingestion-service` also has an automated JUnit suite covering `HubCsvCleaner`'s normalization and
 dedup rules — run it with `cd ingestion-service && mvn test`. The other services don't have
-automated tests yet; to add them to a module, add JUnit 5 and Surefire to its `pom.xml`:
+All five modules now have automated tests. Run the complete suite from the
+project root with:
 
-```xml
-<dependency>
-  <groupId>org.junit.jupiter</groupId>
-  <artifactId>junit-jupiter</artifactId>
-  <version>5.10.2</version>
-  <scope>test</scope>
-</dependency>
+```text
+mvn -B -ntp verify
 ```
 
-```xml
-<plugin>
-  <groupId>org.apache.maven.plugins</groupId>
-  <artifactId>maven-surefire-plugin</artifactId>
-  <version>3.2.5</version>
-</plugin>
-```
-
-then add tests under that module's `src/test/java/...` and run:
-
-```
-mvn test
-```
+The Compose deployment persists delay stages in the `delay-stage-data` volume and alert history in
+the `alertbot-data` volume. Set `STATE_FILE` explicitly when deploying outside Compose.

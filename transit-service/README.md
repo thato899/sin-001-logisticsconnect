@@ -46,7 +46,7 @@ Listens on port `7053`.
 
 ## Test
 
-No automated tests yet. Manually verify it's up:
+Unit tests cover the ETA window formula. Manually verify it's up:
 
 ```
 curl http://localhost:7053/health   # -> OK

@@ -24,7 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class TransitServiceApp {
 
-    private static final String HUB_SERVICE_URL = "http://localhost:7051";
+    private static final String HUB_SERVICE_URL = System.getenv().getOrDefault("HUB_SERVICE_URL", "http://localhost:7051");
+    private static final int PORT = Integer.parseInt(System.getenv().getOrDefault("PORT", "7053"));
 
     // ETA formula: a fixed baseline transit time, plus a widening window driven by delay stage.
     // Arbitrary but documented — the exact numbers aren't the point, the shape (stage worsens
@@ -51,7 +52,7 @@ public class TransitServiceApp {
     public static void main(String[] args) {
         subscribeMq();
 
-        Javalin app = Javalin.create().start(7053);
+        Javalin app = Javalin.create().start(PORT);
 
         app.get("/health", ctx -> ctx.result("OK"));
 
@@ -76,7 +77,7 @@ public class TransitServiceApp {
 
             Instant now = Instant.now();
             Instant windowStart = now.plus(BASE_HOURS, ChronoUnit.HOURS);
-            Instant windowEnd = windowStart.plus(BASE_WINDOW_HOURS + delayStage * HOURS_PER_STAGE, ChronoUnit.HOURS);
+            Instant windowEnd = etaWindowEnd(windowStart, delayStage);
 
             ctx.json(new EtaResponse(hub.hubId(), hub.province(), hub.sortingCenter(), delayStage,
                     windowStart.toString(), windowEnd.toString()));
@@ -84,6 +85,13 @@ public class TransitServiceApp {
     }
 
     private static class UpstreamNotFoundException extends RuntimeException {
+    }
+
+    static Instant etaWindowEnd(Instant windowStart, int delayStage) {
+        if (delayStage < 0) {
+            throw new IllegalArgumentException("delay stage cannot be negative");
+        }
+        return windowStart.plus(BASE_WINDOW_HOURS + delayStage * HOURS_PER_STAGE, ChronoUnit.HOURS);
     }
 
     private static Hub fetchHub(String hubId) throws IOException, InterruptedException {
@@ -108,10 +116,11 @@ public class TransitServiceApp {
         try {
             ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(MqConfig.BROKER_URL);
             Connection connection = factory.createConnection();
+            connection.setClientID("logisticsconnect-transit-service");
             connection.start();
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             Topic topic = session.createTopic(MqConfig.TOPIC);
-            session.createConsumer(topic).setMessageListener(message -> {
+            session.createDurableSubscriber(topic, "transit-service").setMessageListener(message -> {
                 try {
                     String json = ((TextMessage) message).getText();
                     PackageStatusMessage status = MAPPER.readValue(json, PackageStatusMessage.class);
