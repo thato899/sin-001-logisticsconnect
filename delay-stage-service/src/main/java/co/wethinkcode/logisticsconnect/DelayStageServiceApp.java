@@ -52,7 +52,8 @@ public class DelayStageServiceApp {
         loadState();
         connectMq(); // best-effort; publishStageChange() retries if this fails
 
-        Javalin app = Javalin.create().start(PORT);
+        Javalin app = Javalin.create(config ->
+                config.plugins.enableCors(cors -> cors.add(corsConfig -> corsConfig.anyHost()))).start(PORT);
 
         app.get("/health", ctx -> ctx.result("OK"));
 

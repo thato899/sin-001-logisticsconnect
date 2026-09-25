@@ -49,7 +49,8 @@ public class AlertBotApp {
         loadStages();
         subscribeMq();
 
-        Javalin app = Javalin.create().start(PORT);
+        Javalin app = Javalin.create(config ->
+                config.plugins.enableCors(cors -> cors.add(corsConfig -> corsConfig.anyHost()))).start(PORT);
 
         app.get("/health", ctx -> ctx.result("OK"));
 

@@ -27,7 +27,15 @@ public class HubServiceApp {
         // each request retries the fetch until one succeeds (see hubs() below) — no restart needed.
         refreshCache();
 
-        Javalin app = Javalin.create().start(PORT);
+        Javalin app = Javalin.create(config -> {
+            config.staticFiles.add(staticFiles -> {
+                staticFiles.hostedPath = "/";
+                staticFiles.directory = "/public";
+            });
+            config.plugins.enableCors(cors -> cors.add(corsConfig -> corsConfig.anyHost()));
+        }).start(PORT);
+
+        app.get("/", ctx -> ctx.redirect("/index.html"));
 
         app.get("/health", ctx -> ctx.result("OK"));
 

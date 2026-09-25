@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>LogisticsConnect | Control Centre</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">LC</span><span>Logistics<span class="accent">Connect</span></span></div>
+      <div class="workspace-label">CONTROL CENTRE</div>
+      <nav>
+        <button class="nav-item active" data-section="overview"><span>⌂</span> Overview</button>
+        <button class="nav-item" data-section="hubs"><span>◈</span> Hub directory</button>
+        <button class="nav-item" data-section="operations"><span>↗</span> Operations</button>
+        <button class="nav-item" data-section="alerts"><span>♢</span> Alerts <span id="alert-count" class="nav-badge">0</span></button>
+      </nav>
+      <div class="sidebar-bottom"><div class="system-pulse"><i></i><span>System online</span></div><small>Last sync <b id="last-sync">—</b></small></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar"><div><p class="eyebrow">NETWORK OPERATIONS</p><h1 id="page-title">Good morning, operator</h1></div><div class="topbar-actions"><button class="icon-button" id="refresh-btn" title="Refresh data">↻</button><div class="avatar">OP</div></div></header>
+
+      <section id="overview" class="page-section active-section">
+        <div class="hero"><div><span class="status-chip"><i></i> Live network</span><h2>Keep every parcel<br><em>moving forward.</em></h2><p>Monitor hubs, respond to delays, and get a clear view of your delivery network.</p></div><div class="hero-orbit"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit-core">LC</div><span class="node node-a"></span><span class="node node-b"></span><span class="node node-c"></span></div></div>
+        <div class="metric-grid"><article class="metric-card"><div class="metric-icon blue">◈</div><span>Active hubs</span><strong id="hub-total">—</strong><small id="hub-summary">Loading network</small></article><article class="metric-card"><div class="metric-icon amber">≋</div><span>Network delay</span><strong id="delay-total">—</strong><small id="delay-summary">Checking stages</small></article><article class="metric-card"><div class="metric-icon mint">↗</div><span>Services healthy</span><strong id="healthy-total">— / 5</strong><small id="healthy-summary">Running checks</small></article><article class="metric-card"><div class="metric-icon coral">♢</div><span>Open alerts</span><strong id="open-alerts">—</strong><small id="alert-summary">No alerts loaded</small></article></div>
+        <div class="content-grid"><article class="panel wide-panel"><div class="panel-heading"><div><p class="eyebrow">NETWORK SNAPSHOT</p><h3>Hub activity</h3></div><button class="text-button" data-target="hubs">View all hubs →</button></div><div id="hub-preview" class="hub-preview"></div></article><article class="panel"><div class="panel-heading"><div><p class="eyebrow">SERVICE STATUS</p><h3>Platform health</h3></div></div><div id="service-status" class="service-list"></div></article></div>
+      </section>
+
+      <section id="hubs" class="page-section"><div class="section-intro"><div><p class="eyebrow">PLACE-NAME SOURCE OF TRUTH</p><h2>Hub directory</h2><p>Browse every active sorting centre in the network.</p></div><div class="search-wrap">⌕<input id="hub-search" placeholder="Search by hub, province or centre..."></div></div><div id="hub-table" class="panel table-panel"></div></section>
+
+      <section id="operations" class="page-section"><div class="section-intro"><div><p class="eyebrow">OPERATIONS DESK</p><h2>Delay & ETA tools</h2><p>Inspect a hub’s current stage and calculate its delivery window.</p></div></div><div class="operations-grid"><article class="panel operation-card"><div class="operation-number">01</div><h3>Find a hub</h3><p>Select a hub to inspect its current delivery conditions.</p><select id="hub-select"><option value="">Choose a hub...</option></select><div id="selected-hub" class="selected-hub hidden"></div></article><article class="panel operation-card"><div class="operation-number">02</div><h3>Set delay stage</h3><p>Publish a new operational stage from 0 (clear) to 8 (critical).</p><div class="stage-row"><select id="stage-select"><option value="0">Stage 0 · Clear</option><option value="1">Stage 1 · Watch</option><option value="2">Stage 2 · Minor</option><option value="3">Stage 3 · Moderate</option><option value="4">Stage 4 · Serious</option><option value="5">Stage 5 · Severe</option><option value="6">Stage 6 · Major</option><option value="7">Stage 7 · Critical</option><option value="8">Stage 8 · Shutdown</option></select><button id="save-stage" class="primary-button">Update stage</button></div><div id="stage-feedback" class="feedback"></div></article><article class="panel operation-card"><div class="operation-number">03</div><h3>Calculate ETA</h3><p>Generate the current arrival window using hub data and delay stage.</p><button id="eta-btn" class="secondary-button">Calculate arrival window →</button><div id="eta-result" class="eta-result hidden"></div></article></div></section>
+
+      <section id="alerts" class="page-section"><div class="section-intro"><div><p class="eyebrow">PROACTIVE NOTIFICATIONS</p><h2>Alert history</h2><p>Messages published when a hub crosses the alert threshold.</p></div></div><div id="alerts-list" class="panel alerts-panel"></div></section>
+      <div id="toast" class="toast"></div>
+    </main>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>

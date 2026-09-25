@@ -16,7 +16,8 @@ public class IngestionServiceApp {
     public static void main(String[] args) {
         List<Hub> hubs = load();
 
-        Javalin app = Javalin.create().start(PORT);
+        Javalin app = Javalin.create(config ->
+                config.plugins.enableCors(cors -> cors.add(corsConfig -> corsConfig.anyHost()))).start(PORT);
 
         app.get("/health", ctx -> ctx.result("OK"));
 
